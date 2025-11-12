@@ -28,7 +28,7 @@ const InterviewCard = async  ({id,userId,role,type,techstack,createdAt}:Intervie
                     <div className="flex flex-row gap-5 mt-3">
                     <div className="flex flex-row gap-2">
                         <Image src="/calendar.svg" alt="calendar" width={22} height={22}/>
-                        <p>{formatteddate}</p>
+                        <p>{formattedDate}</p>
                     </div>
                         <div className="flex flex-row gap-2 items-center">
                             <Image src="/star.svg" alt="star" width={22} height={22} />

@@ -19,17 +19,18 @@ interface SavedMessage{
     content:string;
 }
 
-const Agent = ({userName ,userId ,type,interviewId,questions }:AgentProps) => {
+const Agent = ({userName ,userId ,type,feedbackId,interviewId,questions }:AgentProps) => {
     const router = useRouter();
     const [isSpeaking ,setIsSpeaking] = useState(false);
     const [callStatus,setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
     const [messages,setMessages] = useState<SavedMessage[]>([]);
+    const [lastMessage, setLastMessage] = useState<string>("");
 
     useEffect(()=>{
         const onCallStart =() => setCallStatus(CallStatus.ACTIVE);
     const onCallEnd =() => setCallStatus(CallStatus.FINISHED);
 
-    const onMessage =(message:Message) => {
+      const onMessage =(message:Message) => {
         if (message.type === 'transcript' && message.transcriptType === 'final') {
             const newMessage = {role: message.role, content: message.transcript}
 
@@ -64,8 +65,9 @@ const Agent = ({userName ,userId ,type,interviewId,questions }:AgentProps) => {
         const {success ,feedbackId: id} = await createFeedback({
             interviewId: interviewId!,
             userId: userId!,
-            transcript: messages
-        })
+            transcript: messages,
+            feedbackId,
+        });
         if(success && id){
             router.push(`/interview/${interviewId}/feedback`);
         }else {
@@ -83,10 +85,10 @@ const Agent = ({userName ,userId ,type,interviewId,questions }:AgentProps) => {
             }
         }
 
-    },[messages , callStatus ,type ,userId] );
+    },[messages , callStatus ,feedbackId,interviewId,type ,userId] );
 
     const handleCall = async () => {
-        setCallStatus(CallStatus.CONNECTING);
+        setCallStatus(CallStatus.ACTIVE);
 
         if (type === "generate") {
             await vapi.start(
@@ -124,7 +126,7 @@ const Agent = ({userName ,userId ,type,interviewId,questions }:AgentProps) => {
     }
 
     const latestMessage = messages[messages.length - 1]?.content;
-    const isCallInactiveorFinished = callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
+    const isCallInactiveOrFinished = callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED;
 
     return (
         <>
@@ -158,7 +160,7 @@ const Agent = ({userName ,userId ,type,interviewId,questions }:AgentProps) => {
                     <button className="relative btn-call" onClick={handleCall}>
                         <span className={cn('absolute animate-ping rounded-full opacity-75', callStatus !=='CONNECTING' && 'hidden')}/>
                             <span>
-                                {isCallInactiveorFinished ? 'Call' : '. . .'}
+                                {isCallInactiveOrFinished ? 'Call' : '. . .'}
                         </span>
                     </button>
                 ) : (
